@@ -1,49 +1,37 @@
 #!/cvmfs/icecube.opensciencegrid.org/py3-v4/RHEL_7_x86_64/bin/python
 
 import sys, os, time
-
 #CSKY IMPORTS
 import csky as cy
 from csky.hyp import PowerLawFlux
 from csky.utils import Arrays
-
 #OTHER IMPORTS
-import copy
-import socket
 import math
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import histlite as hl
-import datetime
 from astropy.time import Time
-import pickle 
 import random
 import argparse
 
 ################################################################################
 # DEFINITIONS
 ################################################################################
-
 def Write2File(msg,logfile):
-
     if logfile!="":
         log = open(logfile, "a")
         log.write(msg+"\n")
-        log.close
-
+        log.close()
+    else:
+        print("WARNING: File path empty, nothing is written")
     return
-#################################################################################
-
-
 ################################################################################
 # INPUT SECTION
 ################################################################################
-
 #############
 # ARGUMENTS #
 #############
-
 p = argparse.ArgumentParser(description="Calculates Sensitivity and Discovery"
                             " Potential Fluxes for the MOJAVE AGN Radio stacking analysis",
                             formatter_class=argparse.RawTextHelpFormatter)
@@ -66,23 +54,19 @@ p.add_argument("--inj_energy", default="1e0_1e1", type=str,
                help="Energy bin in TeV to use for computing differential sensitivity in form of string 1e0_1e1 (default)")
 p.add_argument("--nstep", default=5, type=int,
                help="Number of signal injection steps (default=5)")
-p.add_argument("--input_file", default="/data/user/adesai/radio_stacking/mojavexv/1A_wt_rd_flux/MOJAVE_multiyear_complete_sample.txt", type=str,
+p.add_argument("--input_file", default="../MOJAVE_multiyear_complete_sample.txt", type=str,
                help="Location of input file: MOJAVE_multiyear_complete_sample.txt")
-p.add_argument("--ana_dir_path", default="/data/user/adesai/csky/mojave/time_integrated_analysis/cache/", type=str,
-               help="Location of analysis directory. (Default:/data/user/adesai/csky/mojave/time_integrated_analysis/cache/)")
+p.add_argument("--ana_dir_path", default="../cache/", type=str,
+               help="Location of analysis directory. (Default:../cache/)")
 p.add_argument("--discovery_thresh", default=5, type=float,
                help="Discovery threshold in sigma (default=5)")
 p.add_argument("--compute_sig_trials",default = True,help = 'Compute sig trials using predefined function and not preloaded trials from directory (default True)')
 p.add_argument("--cpus_used",default = 2, type=int,help = 'number of cpus to be used (default 2)')
 
-
-
 args = p.parse_args()
-
 #############
 # ARGUMENTS #
-#############
-    
+#############    
 pivot_energy = args.pivot_energy
 index = args.index
 wrkdir = args.wrkdir
@@ -98,124 +82,70 @@ discovery_thresh = args.discovery_thresh
 compute_sig_trials = args.compute_sig_trials
 cpus_used = args.cpus_used
 
-
-
 wrkdir=args.wrkdir
 if not os.path.exists(wrkdir):
     os.makedirs(wrkdir)
-
-
-
 GeV = 1.        # base SkyLab and csky energy units are in GeV mostly
 TeV = 1000*GeV    
 E0    = pivot_energy*TeV                # pivot energy 
 inj_enj_lo=(float(inj_energy[:3]))*TeV   # inj energy LL
 inj_enj_hi=(float(inj_energy[4:]))*TeV   # inj energy UL 
-
 print("Min max inj energy in GeV")
 print(inj_enj_lo,inj_enj_hi)
-
-
 
 ################################################################################
 # GET MOJAVE DATA SET (NAME RA DEC av_flux pk_flux)SET Directory
 ################################################################################
-
-
 array = np.loadtxt(input_file,dtype='str')
 src_name=np.asarray(array[:,0])
 src_ra=np.asarray(array[:,1],dtype=float)*np.pi/180
 src_dec=np.asarray(array[:,2],dtype=float)*np.pi/180
 flux_used=np.asarray(array[:,3],dtype=float)
-
-
-########################################
-#  Sample Checks and outdir
-########################################
-
-print("---------------------------------------------------------\n")
-print("WARNING!!!! CHECK BELOW IF AVG FLUX IS USED (STATEMENT IS TRUE)")
-print("Max Avg Flux of sample %s; Flux used:%s"%(21433.22727,np.amax(flux_used)))
-if np.amax(flux_used)!=21433.22727:
-      print("ERROR: Fluxes not same, Check column number used!!!!")
-      #exit() #IN IPYNB THIS WILL KILL THE KERNEL
-print("---------------------------------------------------------\n\n\n")
-
-
-#if len(flux_used)!=no_of_sources:                                                                       
 print("---------------------------------------------------------\n")
 print("Number of sources used in stacking: %s"%(len(flux_used)))
 print("---------------------------------------------------------\n")
 no_of_sources=len(flux_used)
 
-
-
-
-  
-    
 ################################################################################
 # Weights!
 ################################################################################
-
 wt=[]
 for j in range(len(flux_used)):
     if equal_weights:
         wt.append(1.0)
     else:
         wt.append(flux_used[j])
-
 wt=wt/np.sum(wt)
 print("\n WEIGHTS USED FOR THIS RUN:\n %s \n"%(wt))
-
 
 ################################################################################
 # CSKY SETUP and LOAD ICECUBE DATA
 ################################################################################
-
-
-
 ana_dir = cy.utils.ensure_dir(ana_dir_path)
 repo = cy.selections.repo
-
 ana = cy.get_analysis(cy.selections.repo, cy.selections.PSDataSpecs.ps_10yr, dir=ana_dir)
 #ana.save(ana_dir) #Un-comment if you are running the analysis for the first time
-
 cy.CONF['ana'] = ana
 cy.CONF['mp_cpus'] = cpus_used
-
-
-
-
-
 
 ################################################################################
 # CSKY SOURCE DESCRIPTION
 ################################################################################
-
 src = cy.utils.Sources(ra=src_ra,dec=src_dec,weight=wt,deg=False)
-
 flux    = cy.hyp.PowerLawFlux(gamma=index,norm=E0,energy_range=(inj_enj_lo,inj_enj_hi))
-
-
-
 
 ################################################################################
 # SET UP TRIAL RUNNER
 ################################################################################
-
 timer = cy.timing.Timer()
 time = timer.time
 with time('trial runner construction'):
     tr = cy.get_trial_runner(src=src, ana=ana,flux=flux, sindec_bandwidth=np.radians(.1), mp_cpus=cpus_used)
 
-
 ################################################################################
 # BACKGROUND
 ################################################################################
-
 bkgfile_comb= wrkdir+"/bkg_files/background_for_index_%s_energy_inj_%s.npy"%(index,energy_inj)
-
-
 if(os.path.isfile(bkgfile_comb)==True):
     bg_arr=np.load(bkgfile_comb)
     bg = cy.dists.Chi2TSD(cy.utils.Arrays(init=bg_arr))
@@ -224,12 +154,10 @@ else:
     bg_arr = tr.get_many_fits(nscramble, seed=random.randint(1, 1000))
     bg = cy.dists.Chi2TSD(bg_arr)
     np.save(bkgfile_comb,bg_arr.as_array)
-    
 print(bg.description)
 ################################################################################
 # BACKGROUND PLOTTING (OPTIONAL)
-################################################################################
-                              
+################################################################################                              
 if make_background_plot:
     fig, ax = plt.subplots()
     h = bg.get_hist(bins=30)
@@ -244,61 +172,46 @@ if make_background_plot:
     plt.tight_layout()
     plt.savefig(wrkdir+"background_plot_for_index_%s_energy_bin_%s.png"%(index,energy_inj))
 
-
-
 ################################################################################
 # SENSITIVITY
 ################################################################################
-
-
 if compute_sig_trials:
     sens = tr.find_n_sig(
-        bg.median(), 0.9,
+        bg.median(), 0.9, #90%
         n_sig_step=nstep,
         batch_size=nsample,
         max_batch_size=nsample,
-        tol=0.05
+        tol=0.05 #Change tolerance if required
         )
 else:
     print("Compute signal trials and then run code")
     
-    
-    
-    
 e_mid=10**((math.log((inj_enj_lo/1000),10)+math.log((inj_enj_hi/1000),10))/2)
-
 print("\nSensitivity Flux in TeV/cm2/s  @ %s TeV:"%(E0/TeV))
 print(tr.to_E2dNdE(sens, E0=e_mid, unit=1e3))   # TeV/cm2/s  @  100TeV
 e2dnde=tr.to_E2dNdE(sens['n_sig'], E0=e_mid, unit=1e3)
 e2dnde_err=tr.to_E2dNdE(sens['n_sig_error'], E0=e_mid, unit=1e3)
-
-
 print(e2dnde,"+-",e2dnde_err)
 
 ################################################################################
 # SAVE RESULTS TO COMMON FILE
 ################################################################################
-
 #E_range gamma e_norm sensflux(e2dnde)calc sensflux(e2dnde)err
 out_line="%s\t%s\t%s\t%.2e\t%.2e\t%s"%(energy_inj,index,e_mid,e2dnde,e2dnde_err,"TeV/cm2/s")
-
 combresult_file= wrkdir+"/sens_combined_result_file_index_%s.txt"%(index)
 if(os.path.isfile(combresult_file)!=True):
     Write2File("E_range\tgamma\te_norm\tsensflux(E2dnde)calc\tsensflux(E2dnde)err",combresult_file)
-
 Write2File(out_line,combresult_file)
-
-
 
 ################################################################################                            
 # DISCOVERY POTENTIAL                                                                                   
 ################################################################################                                    
 if compute_sig_trials:
     disc = tr.find_n_sig(bg.isf_nsigma(discovery_thresh), 
-                     0.5, 
+                     0.5, #50%
                      n_sig_step=nstep, 
                      batch_size=nsample, 
-                     tol=0.05)
+                     tol=0.05) #Change tolerance if required
 else:
     print("Compute signal trials and then run code")
 
@@ -307,14 +220,9 @@ print(tr.to_E2dNdE(disc, E0=e_mid, unit=1e3))   # TeV/cm2/s  @  100TeV
 e2dnde=tr.to_E2dNdE(disc['n_sig'], E0=e_mid, unit=1e3)
 e2dnde_err=tr.to_E2dNdE(disc['n_sig_error'], E0=e_mid, unit=1e3)
 
-
 #E_range gamma e_norm sensflux(e2dnde)calc sensflux(e2dnde)err                                       
 out_line="%s\t%s\t%s\t%.2e\t%.2e\t%s"%(energy_inj,index,e_mid,e2dnde,e2dnde_err,"TeV/cm2/s")
-
 combresult_file=wrkdir+ "/dp_combined_result_file_index_%s.txt"%(index)
 if(os.path.isfile(combresult_file)!=True):
     Write2File("E_range\tgamma\te_norm\tdpflux(E2dnde)calc\tdpflux(E2dnde)err",combresult_file)
-
 Write2File(out_line,combresult_file)
-
-    
