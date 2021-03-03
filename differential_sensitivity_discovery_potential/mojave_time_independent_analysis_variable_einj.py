@@ -25,7 +25,7 @@ def Write2File(msg,logfile):
         print("WARNING: File path empty, nothing is written")
     return
 
-def computing_fluxes_from ns(trials,sens_disc_arr,pivot_energy,units):
+def computing_fluxes_from_ns(trials,sens_disc_arr,pivot_energy,units):
     ednde = trials.to_dNdE(sens_disc_arr['n_sig'], E0=pivot_energy, unit=units)
     ednde_err = trials.to_dNdE(sens_disc_arr['n_sig_error'], E0=pivot_energy, unit=units)
     e2dnde = trials.to_E2dNdE(sens_disc_arr['n_sig'], E0=pivot_energy, unit=units)
@@ -189,7 +189,7 @@ sens = tr.find_n_sig(
     
 e_mid=10**((math.log((inj_enj_lo/1000),10)+math.log((inj_enj_hi/1000),10))/2)
 
-ednde,ednde_err,e2dnde,e2dnde_err=computing_fluxes_from ns(tr,sens,e_mid,1e3)
+ednde,ednde_err,e2dnde,e2dnde_err = computing_fluxes_from_ns(tr,sens,e_mid,1e3)
 print("\nSensitivity Flux in TeV/cm2/s  @ %s TeV:"%(E0/TeV))
 print(e2dnde,"+-",e2dnde_err)
 
@@ -212,7 +212,7 @@ disc = tr.find_n_sig(bg.isf_nsigma(discovery_thresh),
                      tol=0.05) #Change tolerance if required
 
 
-ednde,ednde_err,e2dnde,e2dnde_err=computing_fluxes_from ns(tr,disc,e_mid,1e3)
+ednde,ednde_err,e2dnde,e2dnde_err = computing_fluxes_from_ns(tr,disc,e_mid,1e3)
 print("\n DP Flux in TeV/cm2/s  @ %s TeV:"%(E0/TeV))
 print(e2dnde,"+-",e2dnde_err)
 
