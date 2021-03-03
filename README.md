@@ -19,7 +19,7 @@ eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.0/setup.sh`
 The required csky software can be installed and setup using the instructions given on:
 https://user-web.icecube.wisc.edu/~mrichman/docs/csky/installation.html
 
-# The software setup can be done using setup_environment.sh
+## The software setup can be done using setup_environment.sh
 
 # There are 4 main folders in the analysis.
 
