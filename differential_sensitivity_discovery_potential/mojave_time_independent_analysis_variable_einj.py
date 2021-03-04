@@ -83,10 +83,8 @@ nstep = args.nstep
 input_file = args.input_file
 ana_dir_path = args.ana_dir_path
 discovery_thresh = args.discovery_thresh
-compute_sig_trials = args.compute_sig_trials
 cpus_used = args.cpus_used
 
-wrkdir = args.wrkdir
 if not os.path.exists(wrkdir):
     os.makedirs(wrkdir)
 GeV = 1.        # base SkyLab and csky energy units are in GeV mostly
@@ -130,7 +128,8 @@ if(os.path.isdir(ana_dir)==True):
     print("Not saving analysis cache as folder exists")
 else:
     print("Saving analysis cache to ",ana_dir)
-    ana.save(ana_dir)cy.CONF['ana'] = ana
+    ana.save(ana_dir)
+cy.CONF['ana'] = ana
 cy.CONF['mp_cpus'] = cpus_used
 
 ################################################################################
