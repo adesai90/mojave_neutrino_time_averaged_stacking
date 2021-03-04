@@ -5,7 +5,7 @@ This folder includes scripts for the Radio Neutrino Correlation analysis using M
 
 > IceCube environment  : py3-v4.1.0 (python 3)
 
-> Csky  version        : v1.0.0
+> Csky  version        : v1.1.0
 
 > Pycondor version     : v0.5.0
 
@@ -19,7 +19,6 @@ eval `/cvmfs/icecube.opensciencegrid.org/py3-v4.1.0/setup.sh`
 The required csky software can be installed and setup using the instructions given on:
 https://user-web.icecube.wisc.edu/~mrichman/docs/csky/installation.html
 
-## The software setup can be done using setup_environment.sh
 
 # There are 4 main folders in the analysis.
 
@@ -31,10 +30,8 @@ https://user-web.icecube.wisc.edu/~mrichman/docs/csky/installation.html
   > python mojave_time_independent_analysis_fixed_einj.py --index=2.0 --pivot_energy=100.0 --cpus_used=3
 
   Other options include:
-  --wrkdir,--equal_weights,--nscramble,--nsample,--make_background_plot,--inj_energy,--nstep,--input_file,--ana_dir_path,--discovery_thresh,--compute_sig_trials,--cpus_used
-  Currently the --compute_sig_trials should be set to True. 
-  This is an function, to be added, if the user wants to run the analysis with precomputed trials instead of computing them in the code.
-  As it was not necessary for the unblinding, I have not yet updated this feature.
+  --wrkdir,--equal_weights,--nscramble,--nsample,--make_background_plot,--inj_energy,--nstep,--input_file,--ana_dir_path,--discovery_thresh,--cpus_used
+  
 
   The Sensitivity and Discovery Potential for different indices plots shown on the wiki page are made using the results that are outputted in the textfile derived using the above code. 
 
@@ -49,11 +46,8 @@ https://user-web.icecube.wisc.edu/~mrichman/docs/csky/installation.html
   > python mojave_time_independent_analysis_variable_einj.py --inj_energy=1e1_1e2 --index=2.0 --pivot_energy=100.0 --cpus_used=3
 
   Other options include:
-  --wrkdir,--equal_weights,--nscramble,--nsample,--make_background_plot,--inj_energy,--nstep,--input_file,--ana_dir_path,--discovery_thresh,--compute_sig_trials,--cpus_used
-  Currently the --compute_sig_trials should be set to True. 
-  This is an function, to be added, if the user wants to run the analysis with precomputed trials instead of computing them in the code.
-  As it was not necessary for the unblinding, I have not yet updated this feature.
-
+  --wrkdir,--equal_weights,--nscramble,--nsample,--make_background_plot,--inj_energy,--nstep,--input_file,--ana_dir_path,--discovery_thresh,--cpus_used
+  
   The Differential Sensitivity and Discovery Potential for different indices plots shown on the wiki page are made using the results that are outputted in the textfile derived using the above code. 
 
   The pycondor_jobsubmit_fixed_einj.py is used to submit multiple jobs to the submitter. (To make changes to the path of the code and/or other input parameters modify the pycondor code directly)
