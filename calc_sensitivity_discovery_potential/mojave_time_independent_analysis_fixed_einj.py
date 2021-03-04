@@ -84,13 +84,11 @@ nstep = args.nstep
 input_file = args.input_file
 ana_dir_path = args.ana_dir_path
 discovery_thresh = args.discovery_thresh
-compute_sig_trials = args.compute_sig_trials
 cpus_used = args.cpus_used
 
 GeV = 1.        # base SkyLab and csky energy units are in GeV mostly
 TeV = 1000*GeV    
 E0    = pivot_energy*TeV                # pivot energy 
-wrkdir = args.wrkdir
 if not os.path.exists(wrkdir):
     os.makedirs(wrkdir)
 
